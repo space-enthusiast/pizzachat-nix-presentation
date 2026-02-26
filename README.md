@@ -41,6 +41,7 @@ The presentation is about solving developer environment setting bottlenecks usin
 ## Usage
 - Prerequisites: nix (with flakes) + direnv
 - `direnv allow` to load the environment
-- `slidev slides.md` to start live preview
-- `slidev build slides.md` to build static site
-- `slidev export slides.md` to export to PDF
+- `npm install` to install dependencies
+- `npm run dev` to start live preview
+- `npm run build` to build static site
+- `npm run export` to export to PDF
