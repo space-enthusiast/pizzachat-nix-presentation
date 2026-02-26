@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/space-enthusiast/pizzachat-nix-presentation/issues"
   },
-  "homepage": "https://github.com/space-enthusiast/pizzachat-nix-presentation#readme"
+  "homepage": "https://github.com/space-enthusiast/pizzachat-nix-presentation#readme",
+  "devDependencies": {
+    "playwright": "^1.58.2"
+  }
 }

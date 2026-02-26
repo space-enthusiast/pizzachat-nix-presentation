@@ -105,3 +105,17 @@ layout: center
 ---
 
 # Q & A
+
+---
+
+# Bonus: Making This Presentation
+
+While making these slides with Slidev + Nix + direnv...
+
+Vite tried to watch **the entire nixpkgs source tree** inside `.direnv/flake-inputs/`
+
+```
+Error: ENOSPC: System limit for number of file watchers reached
+```
+
+The irony of a presentation about Nix breaking because of Nix
