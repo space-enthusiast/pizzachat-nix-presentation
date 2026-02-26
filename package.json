@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "@slidev/cli": "^52.12.0",
+    "@slidev/theme-default": "^0.25.0"
+  },
+  "name": "pizzachat-nix-presentation",
+  "version": "1.0.0",
+  "description": "This is a repository for a presentation at a small conference called pizzachat The presentation is about solving developer environment setting bottlenecks using nix + direnv",
+  "main": "index.js",
+  "scripts": {
+    "dev": "slidev slides.md",
+    "build": "slidev build slides.md",
+    "export": "slidev export slides.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/space-enthusiast/pizzachat-nix-presentation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/space-enthusiast/pizzachat-nix-presentation/issues"
+  },
+  "homepage": "https://github.com/space-enthusiast/pizzachat-nix-presentation#readme"
+}
