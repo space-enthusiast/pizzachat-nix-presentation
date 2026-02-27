@@ -13,24 +13,102 @@ Pizzachat Presentation
 
 ---
 
-# The Problem
+# About Me
 
-- Every project needs different environment settings
-- One project's environment can pollute the global environment
-- We have to relearn how to set up each project every time
-- Dependencies can collide when they share the same paths (DLL Hell)
+Github [@space-enthusiast](https://github.com/space-enthusiast)
+
+5+ year developer whos passionate about enhancing Developer Experience (DX)
 
 ---
 
 # Problem Example
 
-Project A needs **OpenSSL 1.1**, Project B needs **OpenSSL 3.0**
+You're working on two projects:
 
-Using either project breaks the other.
+| | Project A | Project B |
+|---|---|---|
+| Node | 18 LTS | 20 LTS |
+| Terraform | 1.5 | 1.7 |
+| ffmpeg | 5.1 | |
 
+---
+
+# Problem Example
+
+```bash {all|1-4|6-9|11-14|all}
+$ cd project-a
+$ nvm use 18
+$ tfenv use 1.5
+Now using node v18.19.0 / Terraform v1.5.7
+
+$ cd ../project-b
+$ nvm use 20
+$ tfenv use 1.7
+Now using node v20.11.0 / Terraform v1.7.5
+
+$ cd ../project-a
+$ node --version && terraform --version
+v20.11.0 / Terraform v1.7.5
+# Forgot to switch back! Wrong versions for both!
 ```
-/usr/lib/libssl.so → ???
+
+---
+
+# The Problem
+
+- Every tool needs its own version manager (`nvm`, `tfenv`, `pyenv`, ...)
+- You must remember to switch versions manually every time
+- One mistake breaks your project
+
+---
+
+# Problem Example
+
+| | Project A | Project B |
+|---|---|---|
+| Node | 18 LTS | 20 LTS |
+| Terraform | 1.5 | 1.7 |
+| ffmpeg | 5.1 | 6.1 (new) |
+
+---
+
+# Problem Example
+
+```bash {all|1-2|4-5|7-9|all}
+$ cd project-b
+$ sudo apt upgrade ffmpeg  # Upgrades to 6.1 globally
+
+$ ffmpeg -version
+ffmpeg version 6.1
+
+$ cd ../project-a
+$ ffmpeg -version
+ffmpeg version 6.1  # Project A needs 5.1 — broken!
 ```
+
+---
+
+# Problem Example
+
+And what about **ffmpeg**?
+
+- No version manager exists
+- Always uses global install
+- Project A needs 5.1, Project B needs 6.1 — too bad!
+
+---
+
+# The Problem
+
+- Managing multiple toolchain versions across projects is hard
+- Global environment pollution — one upgrade breaks other projects
+
+---
+
+# We Need
+
+- Project-level isolated environments
+- Automatic activation when entering a project
 
 ---
 
@@ -41,81 +119,158 @@ Using either project breaks the other.
 
 ---
 
-# How It Works
+# Why Nix?
 
-```nix {all|3-5|6-9|all}
+Nix is a package manager that supports the following:
+
+- Isolated environments per project
+- Multiple versions of the same tool can coexist
+- No global pollution — each project gets exactly what it needs
+
+**Bonus:**
+- Declarative configuration
+- Reproducible on any machine
+
+---
+layout: center
+---
+
+# Let's Nixify the project
+
+---
+
+# Nixifying...
+
+| | Project A | Project B |
+|---|---|---|
+| Node | 18 LTS | 20 LTS |
+| Terraform | 1.5 | 1.7 |
+| ffmpeg | 5.1 | 6.1 |
+
+---
+
+# Project A: flake.nix
+
+```nix {all|2-4|9-11|all}
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/abc...";      # Node 18
+  inputs.nixpkgs-tf.url = "github:NixOS/nixpkgs/def...";   # Terraform 1.5
+  inputs.nixpkgs-ff.url = "github:NixOS/nixpkgs/ghi...";   # ffmpeg 5
 
-  outputs = { nixpkgs, ... }:
-    let pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    in {
-      devShells.default = pkgs.mkShell {
-        buildInputs = [ pkgs.python3 pkgs.nodejs ];
-      };
+  outputs = { nixpkgs, nixpkgs-tf, nixpkgs-ff, ... }: {
+    devShells.default = mkShell {
+      buildInputs = [
+        nixpkgs.nodejs_18        # from abc commit
+        nixpkgs-tf.terraform     # from def commit
+        nixpkgs-ff.ffmpeg_5      # from ghi commit
+      ];
     };
+  };
 }
 ```
 
 ---
 
-# direnv Integration
+# Project B: flake.nix
 
-`.envrc` — just one line:
+```nix {all|2-4|9-11|all}
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/xyz...";      # Node 20
+  inputs.nixpkgs-tf.url = "github:NixOS/nixpkgs/uvw...";   # Terraform 1.7
+  inputs.nixpkgs-ff.url = "github:NixOS/nixpkgs/rst...";   # ffmpeg 6
 
-```bash
-use flake
+  outputs = { nixpkgs, nixpkgs-tf, nixpkgs-ff, ... }: {
+    devShells.default = mkShell {
+      buildInputs = [
+        nixpkgs.nodejs_20        # Node 20 (not 18)
+        nixpkgs-tf.terraform     # Terraform 1.7 (not 1.5)
+        nixpkgs-ff.ffmpeg_6      # ffmpeg 6 (not 5)
+      ];
+    };
+  };
+}
 ```
 
-Enter the directory → environment loads automatically.
+Different commits → Different versions → Both projects coexist!
 
 ---
 
-# Problem Solved
+# Using the Flake
 
-- Two Python projects using different Python versions
-- Two Node.js projects using different Node.js versions
-- Two Java projects with different JDKs
-- Any combination — each project is isolated
+```bash {all|1-4|6-9|all}
+$ cd project-a
+$ ls
+...                       # project files
+flake.nix                 # nix config file
 
----
-
-# Limitations of Nix
-
-- Frequently updated packages have update latency
-- Nix packages and native language packages can desync
-- GUI applications don't work smoothly
-
----
-
-# Working Around the Limitations
-
-- **Nix for the environment**, native package managers for the ecosystem
-- GUI solutions — still a work in progress :(
+$ nix develop
+$ node --version && terraform --version && ffmpeg -version
+v18.19.0 / Terraform v1.5.7 / ffmpeg 5.1
+# All tools ready!
+```
 
 ---
 
-# What I Learned
+# Using the Flake
 
-- There are no silver bullets — choose the right tool for the job
-- Future plan: full desktop environment with NixOS
+```bash {all|2|3-4|6|7-8|all}
+$ cd project-a
+$ nix develop                # Enter the dev shell from flake.nix
+$ node --version && terraform --version && ffmpeg -version
+v18.19.0 / Terraform v1.5.7 / ffmpeg 5.1
+
+$ cd ../project-b
+$ nix develop                # Enter project-b's dev shell
+$ node --version && terraform --version && ffmpeg -version
+v20.11.0 / Terraform v1.7.5 / ffmpeg 6.1
+```
+
+---
+layout: center
+---
+
+# I don't want to type `nix develop` every time...
+
+---
+
+# Adding direnv
+
+**direnv** — automatically runs commands when you enter a directory
+
+```bash {all|1-5|7-9|all}
+$ cd project-a
+$ ls
+...                       # project files
+flake.nix                 # nix config file
+.envrc                    # contains: use flake
+
+$ cd .                    # direnv detects .envrc → runs nix develop
+$ node --version && terraform --version && ffmpeg -version
+v18.19.0 / Terraform v1.5.7 / ffmpeg 5.1  # Automatic!
+```
+
+---
+
+# Result with direnv
+
+```bash
+$ cd project-a
+v18.19.0 / Terraform v1.5.7 / ffmpeg 5.1  # Automatically loaded!
+
+$ cd ../project-b
+v20.11.0 / Terraform v1.7.5 / ffmpeg 6.1  # Switched automatically!
+```
+
+No more `nvm use`, `tfenv use`, or `nix develop` — just `cd`!
+
+---
+layout: center
+---
+
+# Thank you for listening!
 
 ---
 layout: center
 ---
 
 # Q & A
-
----
-
-# Bonus: Making This Presentation
-
-While making these slides with Slidev + Nix + direnv...
-
-Vite tried to watch **the entire nixpkgs source tree** inside `.direnv/flake-inputs/`
-
-```
-Error: ENOSPC: System limit for number of file watchers reached
-```
-
-The irony of a presentation about Nix breaking because of Nix
