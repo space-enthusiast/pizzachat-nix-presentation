@@ -9,8 +9,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "slidev slides.md",
+    "dev:ko": "slidev slides-ko.md",
     "build": "slidev build slides.md",
-    "export": "slidev export slides.md"
+    "build:ko": "slidev build slides-ko.md",
+    "export": "slidev export slides.md",
+    "export:ko": "slidev export slides-ko.md"
   },
   "repository": {
     "type": "git",

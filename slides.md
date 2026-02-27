@@ -1,13 +1,12 @@
 ---
 theme: default
-title: Solving Dev Environment Bottlenecks with Nix + direnv
+title: nix + direnv 을 이용한 환경 세팅 지옥 탈출기
 info: Pizzachat presentation
 highlighter: shiki
 transition: slide-left
 ---
 
-# Solving Dev Environment Bottlenecks
-## with Nix + direnv
+# nix + direnv 을 이용한 환경 세팅 지옥 탈출기
 
 Pizzachat Presentation
 
@@ -15,9 +14,9 @@ Pizzachat Presentation
 
 # About Me
 
-Github [@space-enthusiast](https://github.com/space-enthusiast)
+코프링조아 Github [@space-enthusiast](https://github.com/space-enthusiast)
 
-5+ year developer whos passionate about enhancing Developer Experience (DX)
+5+ year backend developer who's passionate about enhancing Developer Experience (DX)
 
 ---
 
@@ -197,7 +196,7 @@ Different commits → Different versions → Both projects coexist!
 
 # Using the Flake
 
-```bash {all|1-4|6-9|all}
+```bash {all|1-4|6|7-9|all}
 $ cd project-a
 $ ls
 ...                       # project files
